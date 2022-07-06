@@ -25,6 +25,10 @@ public class Main {
     public static long start;
     public static final String PASSWORD_PATTERN =
             "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,20}$";
+    public static final String purple = "\033[0;35m";
+    public static final String red = "\033[0;31m";
+    public static final String blue = "\033[0;34m";
+    public static final String greenbold = "\033[1;32m";
 
     public static boolean isValidPassword(String password) {
         return password.matches(PASSWORD_PATTERN);
@@ -128,8 +132,13 @@ public class Main {
                 String username = usersApiProfileInfo.getUsername();
                 String premiumUntil = usersApiProfileInfo.getPremiumUntil();
                 System.out.println("Username: " + username);
-                System.out.println("Premium Until: " + premiumUntil);
                 currentUser.premiumUntil = premiumUntil;
+                if(premiumUntil.equals("null")) {
+                    System.out.println("You are not premium");
+                } else {
+                    System.out.println("You are premium until " + premiumUntil);
+                    currentUser.isPremium = true;
+                }
                 start = System.currentTimeMillis() / 1000;
             } catch (ApiException apiException) {
                 System.out.println(apiException.getResponseBody());
