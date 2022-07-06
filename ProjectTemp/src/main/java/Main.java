@@ -49,10 +49,12 @@ public class Main {
 
     public static void loginProcess() {
         Scanner input = new Scanner(System.in);
+        Console console = System.console();
         System.out.println(greenbold + "Enter username");
         String username = input.next();
         System.out.println(greenbold + "Enter password" + reset);
         String password = input.next();
+//        String password = PasswordField.readPassword(greenbold + "Enter password" + reset + "\n");
 
         if(!isValidPassword(password)) {
             System.out.println(red + "Password must be at least 8 characters, contain at least one number, one uppercase letter, one lowercase letter, and no spaces." + reset);
@@ -91,6 +93,7 @@ public class Main {
         String username = input.next();
         System.out.println(greenbold + "Please enter a Password" + reset);
         String password = input.next();
+//        String password = PasswordField.readPassword(greenbold + "Enter password" + reset + "\n");
 
         if(!isValidPassword(password)) {
             System.out.println(red + "Password must be at least 8 characters, contain at least one number, one uppercase letter, one lowercase letter, and no spaces." + reset);
@@ -338,7 +341,7 @@ public class Main {
         }
     }
 
-    //Premium feature from here
+    //Premium features start from here
 
     public static void getFriendsInfo() {
         long currentTime = System.currentTimeMillis() / 1000;
@@ -458,7 +461,7 @@ public class Main {
         }
     }
 
-    //Premium feature to here
+    //Premium feature end here
 
     public static void signOut() {
         friendsMap.clear();
@@ -649,5 +652,50 @@ public class Main {
             System.out.println(e.getMessage());
             System.out.println(red + "Error occurred while reading a file" + reset);
         }
+    }
+
+
+}
+
+class PasswordField {
+
+    public static String readPassword (String prompt) {
+        EraserThread et = new EraserThread(prompt);
+        Thread mask = new Thread(et);
+        mask.start();
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        String password = "";
+
+        try {
+            password = in.readLine();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+        et.stopMasking();
+        return password;
+    }
+}
+
+class EraserThread implements Runnable {
+    private boolean stop;
+
+    public EraserThread(String prompt) {
+        System.out.print(prompt);
+    }
+
+    public void run () {
+        while (!stop){
+            System.out.print("\010*");
+            try {
+                Thread.currentThread().sleep(1);
+            } catch(InterruptedException ie) {
+                ie.printStackTrace();
+            }
+        }
+    }
+
+    public void stopMasking() {
+        this.stop = true;
     }
 }
