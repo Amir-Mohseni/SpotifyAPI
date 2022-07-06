@@ -29,6 +29,7 @@ public class Main {
     public static final String red = "\033[0;31m";
     public static final String blue = "\033[0;34m";
     public static final String greenbold = "\033[1;32m";
+    public static final String white = "\u001B[0m";
 
     public static boolean isValidPassword(String password) {
         return password.matches(PASSWORD_PATTERN);
@@ -50,13 +51,13 @@ public class Main {
 
     public static void loginProcess() {
         Scanner input = new Scanner(System.in);
-        System.out.println("Enter username");
+        System.out.println(greenbold + "Enter username");
         String username = input.next();
-        System.out.println("Enter password");
+        System.out.println(greenbold + "Enter password" + white);
         String password = input.next();
 
         if(!isValidPassword(password)) {
-            System.out.println("Password must be at least 8 characters, contain at least one number, one uppercase letter, one lowercase letter, and no spaces.");
+            System.out.println(red + "Password must be at least 8 characters, contain at least one number, one uppercase letter, one lowercase letter, and no spaces." + white);
             loginProcess();
             return;
         }
@@ -68,7 +69,7 @@ public class Main {
             authLoginBody.setPassword(password);
             token = (authApi.login(authLoginBody).getToken());
             currentUser = new User(username, password);
-            System.out.println("You logged in successfully");
+            System.out.println(greenbold + "You logged in successfully" + white);
             currentUser.token = token;
             defaultClient.setAccessToken(currentUser.token);
             OAuth bearerAuth = (OAuth) defaultClient.getAuthentication("bearerAuth");
@@ -79,22 +80,22 @@ public class Main {
         } catch (ApiException apiException) {
             String errorResponse = apiException.getResponseBody();
             if (errorResponse.contains("invalid username or password"))
-                System.out.println("Invalid Username or Password");
+                System.out.println(red + "Invalid Username or Password" + white);
             else
-                System.out.println("No Username/Password provided");
+                System.out.println(red + "No Username/Password provided" + white);
             loginProcess();
         }
     }
 
     public static void signupProcess() {
         Scanner input = new Scanner(System.in);
-        System.out.println("Please enter a Username");
+        System.out.println(greenbold + "Please enter a Username" + white);
         String username = input.next();
-        System.out.println("Please enter a Password");
+        System.out.println(greenbold + "Please enter a Password" + white);
         String password = input.next();
 
         if(!isValidPassword(password)) {
-            System.out.println("Password must be at least 8 characters, contain at least one number, one uppercase letter, one lowercase letter, and no spaces.");
+            System.out.println(red + "Password must be at least 8 characters, contain at least one number, one uppercase letter, one lowercase letter, and no spaces." + white);
             signupProcess();
             return;
         }
@@ -106,7 +107,7 @@ public class Main {
             authSignupBody.setPassword(password);
             token = (authApi.signUp(authSignupBody).getToken());
             currentUser = new User(username, password);
-            System.out.println("You signed up successfully");
+            System.out.println(greenbold + "You signed up successfully" + white);
             currentUser.token = token;
             defaultClient.setAccessToken(currentUser.token);
             OAuth bearerAuth = (OAuth) defaultClient.getAuthentication("bearerAuth");
@@ -117,9 +118,9 @@ public class Main {
         } catch (ApiException apiException) {
             String errorResponse = apiException.getResponseBody();
             if (errorResponse.contains("username already taken"))
-                System.out.println("Username already exists");
+                System.out.println(red + "Username already exists" + white);
             else
-                System.out.println("No Username/Password provided");
+                System.out.println(red + "No Username/Password provided" + white);
             signupProcess();
         }
     }
@@ -131,21 +132,24 @@ public class Main {
                 InlineResponse2003 usersApiProfileInfo = usersApi.getProfileInfo();
                 String username = usersApiProfileInfo.getUsername();
                 String premiumUntil = usersApiProfileInfo.getPremiumUntil();
-                System.out.println("Username: " + username);
+                System.out.println(blue + "Username: " + username + white);
                 currentUser.premiumUntil = premiumUntil;
-                if(premiumUntil.equals("null")) {
-                    System.out.println("You are not premium");
+                if(premiumUntil.contains("null")) {
+                    System.out.println(red + "You are not premium" + white);
                 } else {
-                    System.out.println("You are premium until " + premiumUntil);
+                    System.out.println(greenbold + "You are premium until " + premiumUntil + white);
                     currentUser.isPremium = true;
                 }
                 start = System.currentTimeMillis() / 1000;
             } catch (ApiException apiException) {
-                System.out.println(apiException.getResponseBody());
+                System.out.println(red + apiException.getResponseBody() + white);
             }
         } else {
-            System.out.println("Username: " + currentUser.username);
-            System.out.println("Premium Until: " + currentUser.premiumUntil);
+            if(currentUser.premiumUntil.equals("null")) {
+                System.out.println(red + "You are not premium" + white);
+            } else {
+                System.out.println(greenbold + "You are premium until " + currentUser.premiumUntil + white);
+            }
         }
     }
 
@@ -163,7 +167,7 @@ public class Main {
                 }
                 start = System.currentTimeMillis() / 1000;
             } catch (ApiException apiException) {
-                System.out.println(apiException.getResponseBody());
+                System.out.println(red + apiException.getResponseBody() + white);
             }
         } else {
             Tracks tracks = currentUser.tracks;
@@ -193,7 +197,7 @@ public class Main {
                 }
                 start = System.currentTimeMillis() / 1000;
             } catch (ApiException apiException) {
-                System.out.println(apiException.getResponseBody());
+                System.out.println(red + apiException.getResponseBody() + white);
             }
         }
         else {
@@ -212,13 +216,13 @@ public class Main {
 
     public static void createPlaylistProcess() {
         Scanner input = new Scanner(System.in);
-        System.out.println("Please enter a playlist name");
+        System.out.println(greenbold + "Please enter a playlist name" + white);
         String playlistName = input.nextLine();
         PlaylistsBody playlistsBody = new PlaylistsBody();
         playlistsBody.setName(playlistName);
         try {
             Integer id = usersApi.createPlaylist(playlistsBody).getId();
-            System.out.println("Playlist created successfully with ID: " + id);
+            System.out.println(greenbold + "Playlist created successfully with ID: " + id + white);
             Playlist playlist = new Playlist();
             playlist.setId(id.toString());
             playlist.setName(playlistName);
@@ -226,27 +230,27 @@ public class Main {
         } catch (ApiException apiException) {
             String response = apiException.getResponseBody();
             if(response.contains("no name provided"))
-                System.out.println("No name provided");
+                System.out.println(red + "No name provided" + white);
             else
-                System.out.println("Playlist already exists");
+                System.out.println(red + "Playlist already exists" + white);
         }
         userMenuProcess();
     }
 
     public static void deletePlaylistProcess() {
         Scanner input = new Scanner(System.in);
-        System.out.println("Please enter a playlist ID");
+        System.out.println(greenbold + "Please enter a playlist ID" + white);
         int playlistId;
         try {
             playlistId = input.nextInt();
         }catch (Exception e) {
-            System.out.println("Invalid ID");
+            System.out.println(red + "Invalid ID" + white);
             userMenuProcess();
             return;
         }
         try {
             usersApi.deletePlaylist(playlistId);
-            System.out.println("Playlist deleted successfully");
+            System.out.println(greenbold + "Playlist deleted successfully" + white);
             for (Playlist p : currentUser.playlists) {
                 if(p.getId().equals(playlistId)) {
                     currentUser.deletePlaylist(p);
@@ -256,22 +260,22 @@ public class Main {
         } catch (ApiException apiException) {
             String response = apiException.getResponseBody();
             if(response.contains("no playlist_id provided"))
-                System.out.println("No playlist found with this ID");
+                System.out.println(red + "No playlist found with this ID" + white);
             else
-                System.out.println("Playlist was not found");
+                System.out.println(red + "Playlist was not found" + white);
         }
         userMenuProcess();
     }
 
     public static void addTrackProcess() {
         Scanner input = new Scanner(System.in);
-        System.out.println("Please enter a playlist ID");
+        System.out.println(greenbold + "Please enter a playlist ID" + white);
         int playlistID = input.nextInt();
-        System.out.println("Please enter a track ID");
+        System.out.println(greenbold + "Please enter a track ID" + white);
         String trackID = input.next();
         try {
             usersApi.addTrackToPlaylist(playlistID, trackID);
-            System.out.println("Track successfully added to playlist");
+            System.out.println(greenbold + "Track successfully added to playlist" + white);
             Playlist playlist = currentUser.getPlaylist(String.valueOf(playlistID));
             Track track = currentUser.getTrack(trackID);
             List<Track> tracks = playlist.getTracks();
@@ -280,23 +284,23 @@ public class Main {
         } catch (ApiException apiException) {
             String response = apiException.getResponseBody();
             if(response.contains("no playlist_id provided"))
-                System.out.println("No playlist found with this ID");
+                System.out.println(red + "No playlist found with this ID" + white);
             else if(response.contains("track not found"))
-                System.out.println("No track found with this ID");
+                System.out.println(red + "No track found with this ID" + white);
             else
-                System.out.println("Track already exists in playlist");
+                System.out.println(red + "Track already exists in playlist" + white);
         }
     }
 
     public static void removeTrackProcess() {
         Scanner input = new Scanner(System.in);
-        System.out.println("Please enter a playlist ID");
+        System.out.println(greenbold + "Please enter a playlist ID" + white);
         int playlistID = input.nextInt();
-        System.out.println("Please enter a track ID");
+        System.out.println(greenbold + "Please enter a track ID" + white);
         String trackID = input.next();
         try {
             usersApi.removeTrackFromPlaylist(playlistID, trackID);
-            System.out.println("Track successfully removed from playlist");
+            System.out.println(greenbold + "Track successfully removed from playlist" + white);
             Playlist playlist = currentUser.getPlaylist(String.valueOf(playlistID));
             Track track = currentUser.getTrack(trackID);
             List<Track> tracks = playlist.getTracks();
@@ -306,48 +310,58 @@ public class Main {
         } catch (ApiException apiException) {
             String response = apiException.getResponseBody();
             if(response.contains("no playlist_id provided"))
-                System.out.println("No playlist found with this ID");
+                System.out.println(red + "No playlist found with this ID" + white);
             else
-                System.out.println("Track not found in playlist");
+                System.out.println(red + "Track not found in playlist" + white);
         }
     }
 
     public static void upgradeToPremium() {
         try {
             InlineResponse2005 result = usersApi.upgradeToPremium();
-            System.out.println("Successfully upgraded to premium");
+            System.out.println(greenbold + "Successfully upgraded to premium" + white);
             System.out.println("Premium until: " + result.getPremiumUntil());
             currentUser.isPremium = true;
             currentUser.premiumUntil = result.getPremiumUntil();
         }catch (ApiException apiException) {
-            System.out.println("Error upgrading to premium\nPlease try again");
+            System.out.println(red + "Error upgrading to premium\nPlease try again" + white);
         }
     }
 
     public static void upgradeToPremiumTest() {
         try {
             InlineResponse2005 result = usersApi.upgradeToPremiumTest();
-            System.out.println("Successfully upgraded to premium");
+            System.out.println(greenbold + "Successfully upgraded to premium" + white);
             System.out.println("Premium until: " + result.getPremiumUntil());
             currentUser.isPremium = true;
             currentUser.premiumUntil = result.getPremiumUntil();
         } catch (ApiException apiException) {
-            System.out.println("Error upgrading to premium\nPlease try again");
+            System.out.println(red + "Error upgrading to premium\nPlease try again" + white);
         }
     }
 
     //Premium feature from here
 
     public static void getFriendsInfo() {
-        try {
-            List <String> friendsList = premiumUsersApi.getFriends();
-            currentUser.friendsList = friendsList;
-            System.out.println("Friends: ");
+        long currentTime = System.currentTimeMillis() / 1000;
+        if(currentTime - getStart() > 20) {
+            try {
+                List<String> friendsList = premiumUsersApi.getFriends();
+                currentUser.friendsList = friendsList;
+                System.out.println(blue + "Friends: " + white);
+                for (String friend : friendsList) {
+                    System.out.println("Friend's username: " + friend);
+                }
+                start = System.currentTimeMillis() / 1000;
+            } catch (ApiException apiException) {
+                System.out.println(red + "Error getting friends info\nPlease try again" + white);
+            }
+        } else {
+            List<String> friendsList = currentUser.friendsList;
+            System.out.println(blue + "Friends: " + white);
             for (String friend : friendsList) {
                 System.out.println("Friend's username: " + friend);
             }
-        } catch (ApiException apiException) {
-            System.out.println("Error getting friends info\nPlease try again");
         }
     }
 
@@ -355,66 +369,85 @@ public class Main {
         try {
             List <String> friendRequests = premiumUsersApi.getFriendRequests();
             currentUser.friendRequests = friendRequests;
-            System.out.println("Friend requests: ");
+            System.out.println(blue + "Friend requests: " + white);
             for (String friendRequest : friendRequests) {
                 System.out.println("Requesters username: " + friendRequest);
             }
         } catch (ApiException apiException) {
-            System.out.println("Error getting friend requests\nPlease try again");
+            System.out.println(red + "Error getting friend requests\nPlease try again" + white);
         }
     }
 
     public static void addFriendProcess() {
         Scanner input = new Scanner(System.in);
-        System.out.println("Please enter a username to add as a friend");
+        System.out.println(greenbold + "Please enter a username to add as a friend" + white);
         String username = input.next();
         try {
             InlineResponse2006 response2006 = premiumUsersApi.addFriend(username);
             String message = response2006.getMessage();
             if(message.contains("already")) {
-                System.out.println("User is already your friend");
+                System.out.println(purple + "User is already your friend" + white);
             }
             else if(message.contains("sent")) {
-                System.out.println("Friend request sent");
+                System.out.println(greenbold + "Friend request sent" + white);
             }
             else if(message.contains("now")) {
-                System.out.println("Friend successfully added");
+                System.out.println(greenbold + "Friend successfully added" + white);
                 if(currentUser.friendRequests.contains(username))
                     currentUser.friendRequests.remove(username);
                 currentUser.friendsList.add(username);
             }
             else {
-                System.out.println("You have already sent a friend request to this user");
+                System.out.println(purple + "You have already sent a friend request to this user" + white);
             }
         } catch (ApiException apiException) {
-            System.out.println("Invalid username");
+            System.out.println(red + "Invalid username" + white);
         }
         userMenuProcess();
     }
 
     public static void getFriendPlaylist() {
+        long currentTime = System.currentTimeMillis() / 1000;
         Scanner input = new Scanner(System.in);
-        System.out.println("Please enter a username");
+        System.out.println(greenbold + "Please enter a username" + white);
         String username = input.next();
-        try {
-            Playlists friendsPlaylists = premiumUsersApi.getFriendPlaylists(username);
-            if(friendsMap.containsKey(username))
-                friendsMap.remove(username);
-            friendsMap.put(username, friendsPlaylists);
-            System.out.println("Friends' playlists: ");
-            for (Playlist friendPlaylist : friendsPlaylists) {
-                System.out.println("Friend's playlist name: " + friendPlaylist.getName() + " with ID: " + friendPlaylist.getId());
-                for (Track track : friendPlaylist.getTracks()) {
-                    System.out.println("Track name: " + track.getName() + " with ID: " + track.getId() + " and artist: " + track.getArtist());
+        if(currentTime - getStart() > 20) {
+            try {
+                Playlists friendsPlaylists = premiumUsersApi.getFriendPlaylists(username);
+                if (friendsMap.containsKey(username))
+                    friendsMap.remove(username);
+                friendsMap.put(username, friendsPlaylists);
+                System.out.println(blue + "Friends' playlists: " + white);
+                for (Playlist friendPlaylist : friendsPlaylists) {
+                    System.out.println("Friend's playlist name: " + friendPlaylist.getName() + " with ID: " + friendPlaylist.getId());
+                    for (Track track : friendPlaylist.getTracks()) {
+                        System.out.println("Track name: " + track.getName() + " with ID: " + track.getId() + " and artist: " + track.getArtist());
+                    }
+                    System.out.println("---------------------------------");
                 }
-                System.out.println("---------------------------------");
+                start = System.currentTimeMillis() / 1000;
+            } catch (ApiException apiException) {
+                String response = apiException.getResponseBody();
+                if (response.contains("invalid friend_username"))
+                    System.out.println(red + "Invalid username" + white);
+                else
+                    System.out.println(red + "Friend not found" + white);
             }
-        } catch (ApiException apiException) {
-            String response = apiException.getResponseBody();
-            if(response.contains("invalid friend_username"))
-                System.out.println("Invalid username");
-            else
-                System.out.println("Friend not found");
+        } else {
+            if(friendsMap.containsKey(username)) {
+                Playlists friendsPlaylists = friendsMap.get(username);
+                System.out.println(blue + "Friends' playlists: " + white);
+                for (Playlist friendPlaylist : friendsPlaylists) {
+                    System.out.println("Friend's playlist name: " + friendPlaylist.getName() + " with ID: " + friendPlaylist.getId());
+                    for (Track track : friendPlaylist.getTracks()) {
+                        System.out.println("Track name: " + track.getName() + " with ID: " + track.getId() + " and artist: " + track.getArtist());
+                    }
+                    System.out.println("---------------------------------");
+                }
+            }
+            else {
+                System.out.println(red + "Friend's playlist not found" + white);
+            }
         }
         userMenuProcess();
     }
@@ -422,8 +455,6 @@ public class Main {
     //Premium feature to here
 
     public static void signOut() {
-        currentUser = null;
-        premiumUsersApi = null;
         friendsMap.clear();
         authAPIKey();
         mainMenu();
@@ -431,9 +462,10 @@ public class Main {
 
     public static void userMenuProcess() {
         Scanner input = new Scanner(System.in);
-        System.out.println("1-Profile\n2-Tracks\n3-Get playlist\n4-Create a playlist\n" +
+        String cur = (currentUser.premiumUntil.contains("null"))? red : blue;
+        System.out.println(blue + "1-Profile\n2-Tracks\n3-Get playlist\n4-Create a playlist\n" +
                 "5-Delete a playlist\n6-Add track to a playlist\n7-Remove track from a playlist\n" +
-                "8-Upgrade to premium\n9-Upgrade to premium test\n" +
+                "8-Upgrade to premium\n9-Upgrade to premium test\n" + cur +
                 "10-Get friends info\n11-Get friend requests\n12-Get friend's playlists\n" +
                 "13-Add friend\n14-Sign out\n15-Exit");
         int choice = input.nextInt();
@@ -481,11 +513,11 @@ public class Main {
             signOut();
         } else if(choice == 15) {
             clearConsole();
-            System.out.println("Goodbye");
+            System.out.println(purple + "Goodbye" + white);
             System.exit(0);
         } else {
             clearConsole();
-            System.out.println("Invalid choice");
+            System.out.println(red + "Invalid choice" + white);
         }
         userMenuProcess();
     }
@@ -493,7 +525,7 @@ public class Main {
     public static void mainMenu() {
         clearConsole();
         Scanner input = new Scanner(System.in);
-        System.out.println("Welcome\n1-Login\n2-Signup\n3-Exit");
+        System.out.println(blue + "Welcome\n1-Login\n2-Signup\n3-Exit" + white);
 
         int choice = input.nextInt();
         if (choice == 1)
@@ -503,7 +535,7 @@ public class Main {
         else if (choice == 3)
             System.exit(0);
         else
-            System.out.println("Invalid choice");
+            System.out.println(red + "Invalid choice" + white);
     }
 
     public static void preProcess() {

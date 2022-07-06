@@ -3,16 +3,17 @@ import io.swagger.client.model.Playlists;
 import io.swagger.client.model.Track;
 import io.swagger.client.model.Tracks;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class User {
     public String username;
     public String password;
-    public Playlists playlists;
-    public Tracks tracks;
+    public Playlists playlists = new Playlists();
+    public Tracks tracks = new Tracks();
     public String token;
-    public List<String> friendsList;
-    public List<String> friendRequests;
+    public List<String> friendsList = new ArrayList<>();
+    public List<String> friendRequests = new ArrayList<>();
     public String premiumUntil = "null";
     public boolean isPremium = false;
 
