@@ -3,6 +3,7 @@ import io.swagger.client.model.Playlists;
 import io.swagger.client.model.Track;
 import io.swagger.client.model.Tracks;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 

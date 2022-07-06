@@ -494,7 +494,7 @@ public class Main {
     }
 
     public static void userMenuProcess() {
-        getChangesFromFile();
+//        getChangesFromFile();
         Scanner input = new Scanner(System.in);
         String cur = (currentUser.premiumUntil.contains("null"))? red : blue;
         System.out.println(blue + "1-Profile\n2-Tracks\n3-Get playlist\n4-Create a playlist\n" +
@@ -553,7 +553,7 @@ public class Main {
             clearConsole();
             System.out.println(red + "Invalid choice" + reset);
         }
-        saveChangesToFile();
+//        saveChangesToFile();
         userMenuProcess();
     }
 
@@ -597,7 +597,7 @@ public class Main {
         friendsPlaylistPrep();
         prep = false;
         start = System.currentTimeMillis() / 1000;
-        saveChangesToFile();
+//        saveChangesToFile();
     }
 
     public static void main(String[] args) {
@@ -612,24 +612,21 @@ public class Main {
 
     public static void saveChangesToFile() {
         try {
-            String startPath = "src/main/java/SaveFiles";
-            File f = new File(startPath + "/User.txt");
-            if(!f.exists())
-                f.createNewFile();
+            String startPath = "src/main/java/SaveFiles/";
+            File f = new File(  startPath + "userfiles.txt");
             FileOutputStream fileOutputStream = new FileOutputStream(f);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(currentUser);
             objectOutputStream.flush();
             objectOutputStream.close();
-            f = new File(startPath + "/friendsMap.txt");
-            if(!f.exists())
-                f.createNewFile();
+            f = new File(startPath + "mapfiles.txt");
             fileOutputStream = new FileOutputStream(f);
             objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(friendsMap);
             objectOutputStream.flush();
             objectOutputStream.close();
         }catch (Exception e) {
+            System.out.println(e.getMessage());
             System.out.println(red + "Error occurred while writing a file" + reset);
         }
 
@@ -637,13 +634,13 @@ public class Main {
 
     public static void getChangesFromFile() {
         try {
-            String startPath = "src/main/java/SaveFiles";
-            File f = new File(startPath + "/User.txt");
+            String startPath = "src/main/java/SaveFiles/";
+            File f = new File(startPath + "userfiles.txt");
             FileInputStream fileInputStream = new FileInputStream(f);
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             currentUser = (User) objectInputStream.readObject();
             objectInputStream.close();
-            f = new File(startPath + "/friendsMap.txt");
+            f = new File(startPath + "mapfiles.txt");
             fileInputStream = new FileInputStream(f);
             objectInputStream = new ObjectInputStream(fileInputStream);
             friendsMap = (HashMap<String, Playlists>) objectInputStream.readObject();
