@@ -9,6 +9,7 @@ import io.swagger.client.auth.ApiKeyAuth;
 import io.swagger.client.auth.OAuth;
 import io.swagger.client.model.*;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
@@ -171,7 +172,6 @@ public class Main {
                 System.out.println(red + apiException.getResponseBody() + reset);
             }
         } else {
-            System.out.println("Moshkel az taraf mane");
             Tracks tracks = currentUser.tracks;
             for (Track track : tracks) {
                 if(track.isIsPremium() && currentUser.isPremium)
@@ -180,7 +180,6 @@ public class Main {
                     System.out.println("Track: " + track.getName() + " - " + "Artist: " + track.getArtist() + " - " + "ID: " + track.getId());
             }
         }
-        userMenuProcess();
     }
 
     public static void getPlaylistInfo() {
@@ -213,7 +212,6 @@ public class Main {
                 System.out.println("---------------------");
             }
         }
-        userMenuProcess();
     }
 
     public static void createPlaylistProcess() {
@@ -236,7 +234,6 @@ public class Main {
             else
                 System.out.println(red + "Playlist already exists" + reset);
         }
-        userMenuProcess();
     }
 
     public static void deletePlaylistProcess() {
@@ -266,7 +263,6 @@ public class Main {
             else
                 System.out.println(red + "Playlist was not found" + reset);
         }
-        userMenuProcess();
     }
 
     public static void addTrackProcess() {
@@ -415,7 +411,6 @@ public class Main {
         } catch (ApiException apiException) {
             System.out.println(red + "Invalid username" + reset);
         }
-        userMenuProcess();
     }
 
     public static void getFriendPlaylist() {
@@ -461,7 +456,6 @@ public class Main {
                 System.out.println(red + "Friend's playlist not found" + reset);
             }
         }
-        userMenuProcess();
     }
 
     //Premium feature to here
@@ -476,7 +470,6 @@ public class Main {
         if(!currentUser.isPremium) {
             clearConsole();
             System.out.println(red + "You discovered a premium feature" + reset);
-            userMenuProcess();
             return;
         }
         else {
@@ -495,13 +488,13 @@ public class Main {
                     addFriendProcess();
                     break;
                 default:
-                    userMenuProcess();
                     break;
             }
         }
     }
 
     public static void userMenuProcess() {
+        getChangesFromFile();
         Scanner input = new Scanner(System.in);
         String cur = (currentUser.premiumUntil.contains("null"))? red : blue;
         System.out.println(blue + "1-Profile\n2-Tracks\n3-Get playlist\n4-Create a playlist\n" +
@@ -560,6 +553,7 @@ public class Main {
             clearConsole();
             System.out.println(red + "Invalid choice" + reset);
         }
+        saveChangesToFile();
         userMenuProcess();
     }
 
@@ -603,6 +597,7 @@ public class Main {
         friendsPlaylistPrep();
         prep = false;
         start = System.currentTimeMillis() / 1000;
+        saveChangesToFile();
     }
 
     public static void main(String[] args) {
@@ -613,5 +608,49 @@ public class Main {
     public static void clearConsole() {
         System.out.print("\033[H\033[2J");
         System.out.flush();
+    }
+
+    public static void saveChangesToFile() {
+        try {
+            String startPath = "src/main/java/SaveFiles";
+            File f = new File(startPath + "/User.txt");
+            if(!f.exists())
+                f.createNewFile();
+            FileOutputStream fileOutputStream = new FileOutputStream(f);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            objectOutputStream.writeObject(currentUser);
+            objectOutputStream.flush();
+            objectOutputStream.close();
+            f = new File(startPath + "/friendsMap.txt");
+            if(!f.exists())
+                f.createNewFile();
+            fileOutputStream = new FileOutputStream(f);
+            objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            objectOutputStream.writeObject(friendsMap);
+            objectOutputStream.flush();
+            objectOutputStream.close();
+        }catch (Exception e) {
+            System.out.println(red + "Error occurred while writing a file" + reset);
+        }
+
+    }
+
+    public static void getChangesFromFile() {
+        try {
+            String startPath = "src/main/java/SaveFiles";
+            File f = new File(startPath + "/User.txt");
+            FileInputStream fileInputStream = new FileInputStream(f);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            currentUser = (User) objectInputStream.readObject();
+            objectInputStream.close();
+            f = new File(startPath + "/friendsMap.txt");
+            fileInputStream = new FileInputStream(f);
+            objectInputStream = new ObjectInputStream(fileInputStream);
+            friendsMap = (HashMap<String, Playlists>) objectInputStream.readObject();
+            objectInputStream.close();
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.out.println(red + "Error occurred while reading a file" + reset);
+        }
     }
 }
