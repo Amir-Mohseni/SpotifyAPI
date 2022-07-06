@@ -23,6 +23,7 @@ public class Main {
     public static HashMap<String, Playlists> friendsMap = new HashMap<>();
     public static User currentUser;
     public static long start;
+    public static boolean prep = false;
     public static final String PASSWORD_PATTERN =
             "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,20}$";
     public static final String purple = "\033[0;35m";
@@ -33,10 +34,6 @@ public class Main {
 
     public static boolean isValidPassword(String password) {
         return password.matches(PASSWORD_PATTERN);
-    }
-
-    public static long getStart() {
-        return start;
     }
 
     public static void authAPIKey() {
@@ -127,15 +124,18 @@ public class Main {
 
     public static void getProfileInfo() {
         long currentTime = System.currentTimeMillis() / 1000;
-        if (currentTime - getStart() > 20) {
+        if (prep || currentTime - start > 20) {
             try {
                 InlineResponse2003 usersApiProfileInfo = usersApi.getProfileInfo();
                 String username = usersApiProfileInfo.getUsername();
                 String premiumUntil = usersApiProfileInfo.getPremiumUntil();
+                if(premiumUntil == null)
+                    premiumUntil = "null";
                 System.out.println(blue + "Username: " + username + white);
                 currentUser.premiumUntil = premiumUntil;
                 if(premiumUntil.contains("null")) {
                     System.out.println(red + "You are not premium" + white);
+                    currentUser.isPremium = false;
                 } else {
                     System.out.println(greenbold + "You are premium until " + premiumUntil + white);
                     currentUser.isPremium = true;
@@ -145,6 +145,7 @@ public class Main {
                 System.out.println(red + apiException.getResponseBody() + white);
             }
         } else {
+            System.out.println(blue + "Username: " + currentUser.username + white);
             if(currentUser.premiumUntil.equals("null")) {
                 System.out.println(red + "You are not premium" + white);
             } else {
@@ -155,7 +156,7 @@ public class Main {
 
     public static void getTracksInfo() {
         long currentTime = System.currentTimeMillis() / 1000;
-        if (currentTime - getStart() > 20) {
+        if (prep || currentTime - start > 20) {
             try {
                 Tracks tracks = usersApi.getTracksInfo();
                 currentUser.tracks = tracks;
@@ -170,6 +171,7 @@ public class Main {
                 System.out.println(red + apiException.getResponseBody() + white);
             }
         } else {
+            System.out.println("Moshkel az taraf mane");
             Tracks tracks = currentUser.tracks;
             for (Track track : tracks) {
                 if(track.isIsPremium() && currentUser.isPremium)
@@ -183,7 +185,7 @@ public class Main {
 
     public static void getPlaylistInfo() {
         long currentTime = System.currentTimeMillis() / 1000;
-        if(currentTime - getStart() > 20) {
+        if(prep || currentTime - start > 20) {
             try {
                 Playlists playlists = usersApi.getPlaylistsInfo();
                 currentUser.playlists = playlists;
@@ -344,7 +346,7 @@ public class Main {
 
     public static void getFriendsInfo() {
         long currentTime = System.currentTimeMillis() / 1000;
-        if(currentTime - getStart() > 20) {
+        if(prep || currentTime - start > 20) {
             try {
                 List<String> friendsList = premiumUsersApi.getFriends();
                 currentUser.friendsList = friendsList;
@@ -366,15 +368,25 @@ public class Main {
     }
 
     public static void getFriendRequests() {
-        try {
-            List <String> friendRequests = premiumUsersApi.getFriendRequests();
-            currentUser.friendRequests = friendRequests;
+        long currentTime = System.currentTimeMillis() / 1000;
+        if(prep || currentTime - start > 20) {
+            try {
+                List<String> friendRequests = premiumUsersApi.getFriendRequests();
+                currentUser.friendRequests = friendRequests;
+                System.out.println(blue + "Friend requests: " + white);
+                for (String friendRequest : friendRequests) {
+                    System.out.println("Requesters username: " + friendRequest);
+                }
+                start = System.currentTimeMillis() / 1000;
+            } catch (ApiException apiException) {
+                System.out.println(red + "Error getting friend requests\nPlease try again" + white);
+            }
+        } else {
+            List<String> friendRequests = currentUser.friendRequests;
             System.out.println(blue + "Friend requests: " + white);
             for (String friendRequest : friendRequests) {
                 System.out.println("Requesters username: " + friendRequest);
             }
-        } catch (ApiException apiException) {
-            System.out.println(red + "Error getting friend requests\nPlease try again" + white);
         }
     }
 
@@ -411,7 +423,7 @@ public class Main {
         Scanner input = new Scanner(System.in);
         System.out.println(greenbold + "Please enter a username" + white);
         String username = input.next();
-        if(currentTime - getStart() > 20) {
+        if(prep || currentTime - start > 20) {
             try {
                 Playlists friendsPlaylists = premiumUsersApi.getFriendPlaylists(username);
                 if (friendsMap.containsKey(username))
@@ -460,6 +472,35 @@ public class Main {
         mainMenu();
     }
 
+    public static void checkPremium(int choice) {
+        if(!currentUser.isPremium) {
+            clearConsole();
+            System.out.println(red + "You discovered a premium feature" + white);
+            userMenuProcess();
+            return;
+        }
+        else {
+            clearConsole();
+            switch (choice) {
+                case 10:
+                    getFriendsInfo();
+                    break;
+                case 11:
+                    getFriendRequests();
+                    break;
+                case 12:
+                    getFriendPlaylist();
+                    break;
+                case 13:
+                    addFriendProcess();
+                    break;
+                default:
+                    userMenuProcess();
+                    break;
+            }
+        }
+    }
+
     public static void userMenuProcess() {
         Scanner input = new Scanner(System.in);
         String cur = (currentUser.premiumUntil.contains("null"))? red : blue;
@@ -467,7 +508,7 @@ public class Main {
                 "5-Delete a playlist\n6-Add track to a playlist\n7-Remove track from a playlist\n" +
                 "8-Upgrade to premium\n9-Upgrade to premium test\n" + cur +
                 "10-Get friends info\n11-Get friend requests\n12-Get friend's playlists\n" +
-                "13-Add friend\n14-Sign out\n15-Exit");
+                "13-Add friend\n" + blue + "14-Sign out\n15-Exit" + white);
         int choice = input.nextInt();
         if (choice == 1) {
             clearConsole();
@@ -498,16 +539,16 @@ public class Main {
             upgradeToPremiumTest();
         } else if(choice == 10) {
             clearConsole();
-            getFriendsInfo();
+            checkPremium(10);
         } else if(choice == 11) {
             clearConsole();
-            getFriendRequests();
+            checkPremium(11);
         } else if(choice == 12) {
             clearConsole();
-            getFriendPlaylist();
+            checkPremium(12);
         } else if(choice == 13) {
             clearConsole();
-            addFriendProcess();
+            checkPremium(13);
         } else if(choice == 14) {
             clearConsole();
             signOut();
@@ -539,19 +580,15 @@ public class Main {
     }
 
     public static void preProcess() {
-        start = System.currentTimeMillis() / 1000;
-        start -= 30;
+        prep = true;
         getProfileInfo();
-        start -= 30;
         getPlaylistInfo();
-        start -= 30;
         getFriendPlaylist();
-        start -= 30;
         getTracksInfo();
-        start -= 30;
         getFriendsInfo();
-        start -= 30;
         getFriendRequests();
+        prep = false;
+        start = System.currentTimeMillis() / 1000;
     }
 
     public static void main(String[] args) {

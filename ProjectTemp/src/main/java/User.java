@@ -35,7 +35,7 @@ public class User {
 
     public Playlist getPlaylist(String id) {
         for (Playlist playlist : playlists) {
-            if(playlist.getId() == id)
+            if(playlist.getId().equals(id))
                 return playlist;
         }
         return null;
@@ -51,7 +51,7 @@ public class User {
 
     public Track getTrack(String id) {
         for (Track track : tracks) {
-            if(track.getId() == id)
+            if(track.getId().equals(id))
                 return track;
         }
         return null;
